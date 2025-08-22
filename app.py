@@ -31,14 +31,14 @@ def load_data():
 @st.cache_resource
 def load_model():
     model = joblib.load('ad_click_model.pkl')
-    with open('model_metadata.pkl', 'rb') as f:
-        metadata = pickle.load(f)
-    return model, metadata
+    with open('model_features.pkl', 'rb') as f:
+        feature_names = pickle.load(f)
+    return model, feature_names
 
 # Load the data and model
 data = load_data()
 try:
-    model, metadata = load_model()
+    model, feature_names = load_model()
     model_loaded = True
 except:
     st.warning("Model files not found. Please train the model first.")
@@ -254,7 +254,7 @@ if page == "EDA Dashboard":
     if st.checkbox("Show raw data"):
         st.dataframe(filtered_data)
 
-# Prediction Page
+# Prediction Page - ONLY THIS SECTION IS UPDATED
 elif page == "Click Prediction":
     st.title("Ad Click Prediction")
     st.markdown("""
@@ -265,7 +265,7 @@ elif page == "Click Prediction":
     if not model_loaded:
         st.error("Model not loaded. Please make sure you have trained the model first.")
     else:
-        # Create input form
+        # Create input form - ONLY the 5 features your model uses
         with st.form("prediction_form"):
             st.header("User Information")
             
@@ -275,39 +275,21 @@ elif page == "Click Prediction":
                 daily_time_spent = st.slider("Daily Time Spent on Site (minutes)", 0, 100, 50)
                 age = st.slider("Age", 18, 80, 35)
                 area_income = st.slider("Area Income (thousands)", 10, 100, 50)
-                daily_internet_usage = st.slider("Daily Internet Usage (MB)", 50, 300, 150)
             
             with col2:
-                # Get unique countries from the dataset
-                countries = sorted(data['Country'].unique())
-                country = st.selectbox("Country", countries, index=countries.index('United States') if 'United States' in countries else 0)
-                
-                # Get unique ad topics from the dataset
-                ad_topics = sorted(data['Ad Topic Line'].unique())
-                ad_topic = st.selectbox("Ad Topic", ad_topics, index=0)
-                
+                daily_internet_usage = st.slider("Daily Internet Usage (MB)", 50, 300, 150)
                 male = st.radio("Gender", ["Male", "Female"])
-                
-                # Create timestamp inputs
-                date = st.date_input("Date", datetime.now())
-                hour = st.slider("Hour of Day", 0, 23, 12)
             
             submitted = st.form_submit_button("Predict Click Probability")
         
         if submitted:
-            # Prepare input data
+            # Prepare input data - ONLY the 5 features your model uses
             input_data = pd.DataFrame({
                 'Daily Time Spent on Site': [daily_time_spent],
                 'Age': [age],
                 'Area Income': [area_income * 1000],  # Convert back to original scale
                 'Daily Internet Usage': [daily_internet_usage],
-                'Ad Topic Line': [ad_topic],
-                'Country': [country],
-                'Male': [1 if male == "Male" else 0],
-                'Timestamp': [pd.Timestamp(date)],
-                'Hour': [hour],
-                'DayOfWeek': [date.weekday()],
-                'Month': [date.month]
+                'Male': [1 if male == "Male" else 0]
             })
             
             # Make prediction
@@ -348,17 +330,32 @@ elif page == "Click Prediction":
                 # Show feature importance explanation
                 st.subheader("Key Factors Influencing This Prediction")
                 
-                # Get feature importances (simplified for demonstration)
-                factors = [
-                    ("Daily Time Spent", daily_time_spent, "More time spent correlates with higher click probability"),
-                    ("Age", age, "Younger users tend to click more often"),
-                    ("Area Income", area_income, "Middle-income users have highest engagement"),
-                    ("Internet Usage", daily_internet_usage, "Moderate users click more than heavy or light users"),
-                    ("Time of Day", hour, "Afternoon hours see highest click rates")
+                # Get actual feature importances from the model
+                if hasattr(model, 'coef_'):
+                    coefficients = model.coef_[0]
+                    feature_importance = pd.DataFrame({
+                        'Feature': feature_names,
+                        'Importance': coefficients
+                    }).sort_values('Importance', key=abs, ascending=False)
+                    
+                    # Display top factors
+                    for i, row in feature_importance.iterrows():
+                        importance_desc = "Increases click probability" if row['Importance'] > 0 else "Decreases click probability"
+                        importance_strength = "strongly" if abs(row['Importance']) > 0.5 else "moderately"
+                        st.write(f"**{row['Feature']}**: {importance_strength} {importance_desc.lower()}")
+                
+                # Add some general insights based on typical patterns
+                st.subheader("General Insights")
+                insights = [
+                    "Users who spend more time on site are more likely to click ads",
+                    "Middle-aged users (30-50) tend to click more than younger or older users",
+                    "Moderate internet users click more often than heavy or light users",
+                    "Income level has a moderate impact on click behavior",
+                    "Gender shows some correlation with click behavior patterns"
                 ]
                 
-                for factor, value, explanation in factors:
-                    st.write(f"**{factor}**: {value} - {explanation}")
+                for insight in insights:
+                    st.write(f"• {insight}")
                     
             except Exception as e:
                 st.error(f"Error making prediction: {str(e)}")
