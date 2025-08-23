@@ -51,13 +51,10 @@ page = st.sidebar.radio("Navigation", ["EDA Dashboard", "Click Prediction"])
 # Filters for EDA
 if page == "EDA Dashboard":
     st.sidebar.header("Filters")
-    click_filter = st.sidebar.selectbox("Clicked on Ad", options=["All", "Yes", "No"])
     gender_filter = st.sidebar.selectbox("Gender", options=["All", "Male", "Female"])
 
     # Apply filters
     filtered_data = data.copy()
-    if click_filter != "All":
-        filtered_data = filtered_data[filtered_data['Clicked on Ad'] == (1 if click_filter == "Yes" else 0)]
     if gender_filter != "All":
         filtered_data = filtered_data[filtered_data['Male'] == (1 if gender_filter == "Male" else 0)]
 
@@ -135,12 +132,16 @@ if page == "EDA Dashboard":
             options=['Age', 'Area Income', 'Daily Time Spent on Site', 'Daily Internet Usage']
         )
         
+        # Create a copy of data with mapped click labels
+        box_data = filtered_data.copy()
+        box_data['Click Status'] = box_data['Clicked on Ad'].map({0: 'Not Clicked', 1: 'Clicked'})
+        
         fig_box = px.box(
-            filtered_data,
-            x='Clicked on Ad',
+            box_data,
+            x='Click Status',
             y=feature,
-            color='Clicked on Ad',
-            title=f'{feature} vs Clicked on Ad',
+            color='Click Status',
+            title=f'{feature} vs Click Status',
             color_discrete_sequence=px.colors.qualitative.Set3
         )
         st.plotly_chart(fig_box, use_container_width=True)
