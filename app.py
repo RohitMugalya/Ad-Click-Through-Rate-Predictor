@@ -128,7 +128,7 @@ if page == "EDA Dashboard":
             y='Daily Time Spent on Site',
             color='Clicked on Ad',
             title='Internet Usage vs Time Spent on Site',
-            color_discrete_map={0: '#8B8B8B', 1: '#2E86AB'}
+            color_continuous_scale=['blue', 'gold']
         )
         st.plotly_chart(fig_scatter, use_container_width=True)
 
@@ -149,7 +149,7 @@ if page == "EDA Dashboard":
             y=feature,
             color='Click Status',
             title=f'{feature} vs Click Status',
-            color_discrete_sequence=px.colors.qualitative.Set3
+            color_discrete_sequence=px.colors.qualitative.Vivid
         )
         st.plotly_chart(fig_box, use_container_width=True)
 
@@ -189,7 +189,7 @@ if page == "EDA Dashboard":
             color='Clicked on Ad',
             title='Clicks by Hour of Day',
             barmode='group',
-            color_discrete_sequence=['#FF6B6B', '#4ECDC4']
+            color_continuous_scale=['blue', 'gold']
         )
         st.plotly_chart(fig_hour, use_container_width=True)
 
@@ -212,7 +212,7 @@ if page == "EDA Dashboard":
             color='Clicked on Ad',
             title='Clicks by Day of Week',
             barmode='group',
-            color_discrete_sequence=['#FF6B6B', '#4ECDC4']
+            color_continuous_scale=['blue', 'gold']
         )
         st.plotly_chart(fig_day, use_container_width=True)
 
@@ -230,7 +230,7 @@ if page == "EDA Dashboard":
         y='Count', 
         color='Clicked on Ad',
         title='Top 10 Countries by Click Distribution',
-        color_discrete_sequence=['#FF6B6B', '#4ECDC4']
+        color_continuous_scale=['blue', '#83c9ff']
     )
     fig_country.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig_country, use_container_width=True)
