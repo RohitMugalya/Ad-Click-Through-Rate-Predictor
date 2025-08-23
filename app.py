@@ -9,7 +9,6 @@ import joblib
 import pickle
 from datetime import datetime
 
-# Set page configuration
 st.set_page_config(
     page_title="Ad Click Prediction Dashboard",
     page_icon="📊",
@@ -17,7 +16,22 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Load data and model
+st.markdown("""
+<style>
+    .stApp {
+        color: white;
+        background-color: #0e1117;
+    }
+    .stApp > header {
+        background-color: transparent;
+    }
+    .stApp > .main > .block-container {
+        background-color: #0e1117;
+    }
+</style>
+""", unsafe_allow_html=True)
+
+
 @st.cache_data
 def load_data():
     filepath = "advertising.csv"
@@ -25,7 +39,7 @@ def load_data():
     data['Timestamp'] = pd.to_datetime(data['Timestamp'])
     data.drop('City', axis='columns', inplace=True)
     data['Hour'] = data['Timestamp'].dt.hour
-    data['DayOfWeek'] = data['Timestamp'].dt.dayofweek  # 0=Mon
+    data['DayOfWeek'] = data['Timestamp'].dt.dayofweek
     return data
 
 @st.cache_resource
@@ -35,7 +49,7 @@ def load_model():
         feature_names = pickle.load(f)
     return model, feature_names
 
-# Load the data and model
+
 data = load_data()
 try:
     model, feature_names = load_model()
@@ -44,21 +58,21 @@ except:
     st.warning("Model files not found. Please train the model first.")
     model_loaded = False
 
-# Sidebar navigation
+
 st.sidebar.title("Ad Click Prediction Dashboard")
 page = st.sidebar.radio("Navigation", ["EDA Dashboard", "Click Prediction"])
 
-# Filters for EDA
+
 if page == "EDA Dashboard":
     st.sidebar.header("Filters")
     gender_filter = st.sidebar.selectbox("Gender", options=["All", "Male", "Female"])
 
-    # Apply filters
+
     filtered_data = data.copy()
     if gender_filter != "All":
         filtered_data = filtered_data[filtered_data['Male'] == (1 if gender_filter == "Male" else 0)]
 
-# EDA Dashboard
+
 if page == "EDA Dashboard":
     st.title("Advertising Campaign Analysis Dashboard")
     st.markdown("""
@@ -66,7 +80,7 @@ if page == "EDA Dashboard":
     Explore the metrics and visualizations below to understand what drives ad clicks.
     """)
 
-    # KPI cards
+
     st.header("Key Performance Indicators")
     col1, col2, col3, col4 = st.columns(4)
 
@@ -80,13 +94,13 @@ if page == "EDA Dashboard":
     col3.metric("Avg. Time on Site", f"{avg_time_spent:.2f} mins")
     col4.metric("Avg. Internet Usage", f"{avg_internet_usage:.2f} MB")
 
-    # Distribution plots
+
     st.header("User Demographics Distribution")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        # Age distribution
+
         fig_age = px.histogram(
             filtered_data, 
             x='Age', 
@@ -98,7 +112,7 @@ if page == "EDA Dashboard":
         st.plotly_chart(fig_age, use_container_width=True)
 
     with col2:
-        # Area Income distribution
+
         fig_income = go.Figure()
         fig_income.add_trace(go.Histogram(
             x=filtered_data['Area Income'],
@@ -108,13 +122,13 @@ if page == "EDA Dashboard":
         fig_income.update_layout(title='Area Income Distribution', bargap=0.1)
         st.plotly_chart(fig_income, use_container_width=True)
 
-    # Behavioral analysis
+
     st.header("User Behavior Analysis")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        # Scatter plot: Internet Usage vs Time Spent
+
         fig_scatter = px.scatter(
             filtered_data,
             x='Daily Internet Usage',
@@ -126,13 +140,13 @@ if page == "EDA Dashboard":
         st.plotly_chart(fig_scatter, use_container_width=True)
 
     with col2:
-        # Box plots per target
+
         feature = st.selectbox(
             "Select feature for box plot:",
             options=['Age', 'Area Income', 'Daily Time Spent on Site', 'Daily Internet Usage']
         )
         
-        # Create a copy of data with mapped click labels
+
         box_data = filtered_data.copy()
         box_data['Click Status'] = box_data['Clicked on Ad'].map({0: 'Not Clicked', 1: 'Clicked'})
         
@@ -146,7 +160,7 @@ if page == "EDA Dashboard":
         )
         st.plotly_chart(fig_box, use_container_width=True)
 
-    # KDE plots
+
     st.header("Feature Distribution by Click Status")
     kde_feature = st.selectbox(
         "Select feature for density plot:",
@@ -167,13 +181,13 @@ if page == "EDA Dashboard":
     fig_dist.update_layout(title=f'{kde_feature} Distribution by Click Status')
     st.plotly_chart(fig_dist, use_container_width=True)
 
-    # Temporal analysis
+
     st.header("Temporal Patterns")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        # Clicks by hour
+
         hourly_clicks = filtered_data.groupby(['Hour', 'Clicked on Ad']).size().reset_index(name='Count')
         fig_hour = px.bar(
             hourly_clicks, 
@@ -187,13 +201,13 @@ if page == "EDA Dashboard":
         st.plotly_chart(fig_hour, use_container_width=True)
 
     with col2:
-        # Clicks by day of week
+
         day_map = {0: 'Monday', 1: 'Tuesday', 2: 'Wednesday', 3: 'Thursday', 4: 'Friday', 5: 'Saturday', 6: 'Sunday'}
         daily_clicks = filtered_data.copy()
         daily_clicks['DayName'] = daily_clicks['DayOfWeek'].map(day_map)
         daily_clicks = daily_clicks.groupby(['DayName', 'Clicked on Ad']).size().reset_index(name='Count')
         
-        # Ensure correct order of days
+
         day_order = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
         daily_clicks['DayName'] = pd.Categorical(daily_clicks['DayName'], categories=day_order, ordered=True)
         daily_clicks = daily_clicks.sort_values('DayName')
@@ -209,10 +223,10 @@ if page == "EDA Dashboard":
         )
         st.plotly_chart(fig_day, use_container_width=True)
 
-    # Geographic analysis
+
     st.header("Geographic Analysis")
 
-    # Top countries
+
     top_countries = filtered_data['Country'].value_counts().head(10).index
     top_countries_data = filtered_data[filtered_data['Country'].isin(top_countries)]
 
@@ -228,7 +242,7 @@ if page == "EDA Dashboard":
     fig_country.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig_country, use_container_width=True)
 
-    # CTR by country and gender
+
     ctr_by_country_gender = (
         filtered_data.groupby(['Country', 'Male'])['Clicked on Ad']
         .mean()
@@ -250,12 +264,12 @@ if page == "EDA Dashboard":
     fig_ctr.update_layout(yaxis_tickformat=".0%", yaxis_title="Click-Through Rate")
     st.plotly_chart(fig_ctr, use_container_width=True)
 
-    # Data table
+
     st.header("Raw Data")
     if st.checkbox("Show raw data"):
         st.dataframe(filtered_data)
 
-# Prediction Page - ONLY THIS SECTION IS UPDATED
+
 elif page == "Click Prediction":
     st.title("Ad Click Prediction")
     st.markdown("""
@@ -266,7 +280,7 @@ elif page == "Click Prediction":
     if not model_loaded:
         st.error("Model not loaded. Please make sure you have trained the model first.")
     else:
-        # Create input form - ONLY the 5 features your model uses
+
         with st.form("prediction_form"):
             st.header("User Information")
             
@@ -284,21 +298,21 @@ elif page == "Click Prediction":
             submitted = st.form_submit_button("Predict Click Probability")
         
         if submitted:
-            # Prepare input data - ONLY the 5 features your model uses
+
             input_data = pd.DataFrame({
                 'Daily Time Spent on Site': [daily_time_spent],
                 'Age': [age],
-                'Area Income': [area_income * 1000],  # Convert back to original scale
+                'Area Income': [area_income * 1000],
                 'Daily Internet Usage': [daily_internet_usage],
                 'Male': [1 if male == "Male" else 0]
             })
             
-            # Make prediction
+
             try:
                 prediction = model.predict(input_data)
                 prediction_proba = model.predict_proba(input_data)
                 
-                # Display results
+
                 st.header("Prediction Results")
                 
                 col1, col2 = st.columns(2)
@@ -309,7 +323,7 @@ elif page == "Click Prediction":
                 with col2:
                     st.metric("Confidence", f"{max(prediction_proba[0]):.2%}")
                 
-                # Show probability breakdown
+
                 st.subheader("Probability Breakdown")
                 
                 fig = go.Figure(go.Bar(
@@ -328,10 +342,10 @@ elif page == "Click Prediction":
                 
                 st.plotly_chart(fig, use_container_width=True)
                 
-                # Show feature importance explanation
+
                 st.subheader("Key Factors Influencing This Prediction")
                 
-                # Get actual feature importances from the model
+
                 if hasattr(model, 'coef_'):
                     coefficients = model.coef_[0]
                     feature_importance = pd.DataFrame({
@@ -339,13 +353,13 @@ elif page == "Click Prediction":
                         'Importance': coefficients
                     }).sort_values('Importance', key=abs, ascending=False)
                     
-                    # Display top factors
+
                     for i, row in feature_importance.iterrows():
                         importance_desc = "Increases click probability" if row['Importance'] > 0 else "Decreases click probability"
                         importance_strength = "strongly" if abs(row['Importance']) > 0.5 else "moderately"
                         st.write(f"**{row['Feature']}**: {importance_strength} {importance_desc.lower()}")
                 
-                # Add some general insights based on typical patterns
+
                 st.subheader("General Insights")
                 insights = [
                     "Users who spend more time on site are more likely to click ads",
@@ -361,6 +375,6 @@ elif page == "Click Prediction":
             except Exception as e:
                 st.error(f"Error making prediction: {str(e)}")
 
-# Footer
+
 st.markdown("---")
 st.markdown("Ad Click Prediction Dashboard | Built with Streamlit")
