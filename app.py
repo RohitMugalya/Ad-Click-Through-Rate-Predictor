@@ -10,7 +10,7 @@ import pickle
 from datetime import datetime
 
 st.set_page_config(
-    page_title="Ad Click Prediction Dashboard",
+    page_title="Ad Click Through Rate Predictor",
     page_icon="📊",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -59,7 +59,13 @@ except:
     model_loaded = False
 
 
-st.sidebar.title("Ad Click Prediction Dashboard")
+st.sidebar.title("Ad Click Through Rate Predictor")
+st.sidebar.markdown("""
+**Welcome!**  
+Navigate between sections to explore:
+- **EDA Dashboard**: Analyze user behavior and campaign insights
+- **Click Prediction**: Predict ad click probability for new users
+""")
 page = st.sidebar.radio("Navigation", ["EDA Dashboard", "Click Prediction"])
 
 
@@ -74,10 +80,10 @@ if page == "EDA Dashboard":
 
 
 if page == "EDA Dashboard":
-    st.title("Advertising Campaign Analysis Dashboard")
+    st.title("Exploratory Data Analysis")
     st.markdown("""
-    This dashboard provides insights into user behavior and advertising campaign performance.
-    Explore the metrics and visualizations below to understand what drives ad clicks.
+    Dive deep into user behavior patterns and advertising campaign performance metrics.
+    Use the filters in the sidebar to customize your analysis and discover what drives ad clicks.
     """)
 
 
@@ -271,10 +277,10 @@ if page == "EDA Dashboard":
 
 
 elif page == "Click Prediction":
-    st.title("Ad Click Prediction")
+    st.title("Click Prediction Model")
     st.markdown("""
-    Enter user information to predict the probability of clicking on an ad.
-    The model uses logistic regression to make predictions based on user behavior and demographics.
+    Enter user characteristics below to predict their likelihood of clicking on an advertisement.
+    Our machine learning model analyzes behavioral patterns and demographics to provide accurate predictions.
     """)
     
     if not model_loaded:
@@ -377,4 +383,4 @@ elif page == "Click Prediction":
 
 
 st.markdown("---")
-st.markdown("Ad Click Prediction Dashboard | Built with Streamlit")
+st.markdown("**Ad Click Through Rate Predictor** | Built with Streamlit & Machine Learning")
