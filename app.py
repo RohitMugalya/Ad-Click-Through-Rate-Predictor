@@ -16,20 +16,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.markdown("""
-<style>
-    .stApp {
-        color: white;
-        background-color: #0e1117;
-    }
-    .stApp > header {
-        background-color: transparent;
-    }
-    .stApp > .main > .block-container {
-        background-color: #0e1117;
-    }
-</style>
-""", unsafe_allow_html=True)
+
 
 
 @st.cache_data
@@ -141,7 +128,7 @@ if page == "EDA Dashboard":
             y='Daily Time Spent on Site',
             color='Clicked on Ad',
             title='Internet Usage vs Time Spent on Site',
-            color_discrete_map={0: 'lightgray', 1: 'blue'}
+            color_discrete_map={0: '#8B8B8B', 1: '#2E86AB'}
         )
         st.plotly_chart(fig_scatter, use_container_width=True)
 
@@ -202,7 +189,7 @@ if page == "EDA Dashboard":
             color='Clicked on Ad',
             title='Clicks by Hour of Day',
             barmode='group',
-            color_discrete_sequence=px.colors.qualitative.Pastel
+            color_discrete_sequence=['#FF6B6B', '#4ECDC4']
         )
         st.plotly_chart(fig_hour, use_container_width=True)
 
@@ -225,7 +212,7 @@ if page == "EDA Dashboard":
             color='Clicked on Ad',
             title='Clicks by Day of Week',
             barmode='group',
-            color_discrete_sequence=px.colors.qualitative.Set2
+            color_discrete_sequence=['#FF6B6B', '#4ECDC4']
         )
         st.plotly_chart(fig_day, use_container_width=True)
 
@@ -243,7 +230,7 @@ if page == "EDA Dashboard":
         y='Count', 
         color='Clicked on Ad',
         title='Top 10 Countries by Click Distribution',
-        color_discrete_sequence=px.colors.qualitative.Set1
+        color_discrete_sequence=['#FF6B6B', '#4ECDC4']
     )
     fig_country.update_layout(xaxis_tickangle=-45)
     st.plotly_chart(fig_country, use_container_width=True)
