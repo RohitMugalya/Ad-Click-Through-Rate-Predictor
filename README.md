@@ -23,8 +23,6 @@ Ad-Click-Through-Rate-Predictor/
 ├── ad_click_model.pkl              # Trained machine learning model
 ├── model_features.pkl              # Feature names for model
 ├── requirements.txt                # Python dependencies
-├── .streamlit/
-│   └── config.toml                 # Streamlit theme configuration
 ├── model_building.ipynb            # Model development notebook
 ├── model_training.ipynb            # Model training process
 ├── exloratory_data_analysis.ipynb  # EDA notebook
